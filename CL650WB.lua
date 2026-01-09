@@ -144,7 +144,7 @@ end
 -- "ARRAY" -> sum(m_fuel[0..8])
 local fuel_source = "F123"
 
-local function auto_fuel_used_kg()
+local function auto_fob_kg()
     if fuel_source == "F123" then
         return sum_fuel123_kg()
     elseif fuel_source == "ARRAY" then
@@ -155,7 +155,7 @@ local function auto_fuel_used_kg()
 end
 
 local function auto_zfw_kg()
-    return auto_total_kg() - auto_fuel_used_kg()
+    return auto_total_kg() - auto_fob_kg()
 end
 
 local function auto_oew_kg()
@@ -167,14 +167,14 @@ end
 -----------------------------------------
 local manual_mode = false
 local man_total_kg      = 0.0
-local man_fuel_used_kg  = 0.0
+local man_fob_kg  = 0.0
 local man_payload_kg    = 0.0
 
 local calc_message = ""
 
 local function sync_manual_from_auto()
     man_total_kg     = auto_total_kg()
-    man_fuel_used_kg = auto_fuel_used_kg()
+    man_fob_kg = auto_fob_kg()
     man_payload_kg   = auto_payload_kg()
 end
 
@@ -183,8 +183,8 @@ sync_manual_from_auto()
 -----------------------------------------
 -- 8) REPORT BUILDERS
 -----------------------------------------
-local function build_main_report(total_kg, fuel_used_kg, payload_kg)
-    local zfw_kg = total_kg - fuel_used_kg
+local function build_main_report(total_kg, fob_kg, payload_kg)
+    local zfw_kg = total_kg - fob_kg
     local oew_kg = zfw_kg - payload_kg
 
     local mtow_margin_kg = LIMIT_MTOW_KG - total_kg
@@ -198,7 +198,7 @@ local function build_main_report(total_kg, fuel_used_kg, payload_kg)
     local lines = {}
     table.insert(lines, "==== KEY WEIGHTS ====")
     table.insert(lines, "TOTAL      : " .. fmt_mass(total_kg, 1))
-    table.insert(lines, "FUEL USED  : " .. fmt_mass(fuel_used_kg, 1) .. "   (source=" .. fuel_source .. ")")
+    table.insert(lines, "FOB        : " .. fmt_mass(fob_kg, 1) .. "   (source=" .. fuel_source .. ")")
     table.insert(lines, "ZFW        : " .. fmt_mass(zfw_kg, 1) .. "   (MZFW margin: " .. fmt_mass(mzfw_margin_kg, 1) .. ")")
     table.insert(lines, "PAYLOAD    : " .. fmt_mass(payload_kg, 1))
     table.insert(lines, "OEW(check) : " .. fmt_mass(oew_kg, 1) .. string.format("   (d_vs_OEW %.0f kg: %+0.1f kg)", LIMIT_OEW_KG, oew_delta_kg))
@@ -390,7 +390,7 @@ function on_build_gui(window_id)
 
     -- Auto summary
     local a_total   = auto_total_kg()
-    local a_fuelU   = auto_fuel_used_kg()
+    local a_fuelU   = auto_fob_kg()
     local a_payload = auto_payload_kg()
     local a_zfw     = auto_zfw_kg()
     local a_oew     = auto_oew_kg()
@@ -414,8 +414,8 @@ function on_build_gui(window_id)
     if ch_t and manual_mode then man_total_kg = math.max(0.0, from_disp_mass(v_t)) end
 
     imgui.TextUnformatted("Auto fuel used: " .. fmt_mass(a_fuelU, 1))
-    local ch_f, v_f = imgui.InputFloat("FUEL used##fuel", to_disp_mass(man_fuel_used_kg), 0, 0, "%.1f")
-    if ch_f and manual_mode then man_fuel_used_kg = math.max(0.0, from_disp_mass(v_f)) end
+    local ch_f, v_f = imgui.InputFloat("FUEL used##fuel", to_disp_mass(man_fob_kg), 0, 0, "%.1f")
+    if ch_f and manual_mode then man_fob_kg = math.max(0.0, from_disp_mass(v_f)) end
 
     imgui.TextUnformatted("Auto m_fixed (payload): " .. fmt_mass(a_payload, 1))
     local ch_p, v_p = imgui.InputFloat("PAYLOAD used##payload", to_disp_mass(man_payload_kg), 0, 0, "%.1f")
@@ -429,7 +429,7 @@ function on_build_gui(window_id)
     -- Calculate / report
     if imgui.Button("Calculate / Refresh Report##calc") then
         local use_total   = manual_mode and man_total_kg     or a_total
-        local use_fuelU   = manual_mode and man_fuel_used_kg or a_fuelU
+        local use_fuelU   = manual_mode and man_fob_kg or a_fuelU
         local use_payload = manual_mode and man_payload_kg   or a_payload
         calc_message = build_main_report(use_total, use_fuelU, use_payload)
     end
