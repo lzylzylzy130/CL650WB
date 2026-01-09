@@ -17,7 +17,7 @@ This tool is read-only and does not write back to aircraft systems or X-Plane we
   - Show window `FlyWithLua/CL650WB/show_window`
   - Toggle window `FlyWithLua/CL650WB/toggle_window`
 
-
+![Screenshot](./Screenshot.png)
 
 ---
 
@@ -50,8 +50,8 @@ You can use either:
   - `FlyWithLua | CL650WB | CL650 W&B: Show window`
   - `FlyWithLua | CL650WB | CL650 W&B: Toggle window`
 
-### Fuel source selector (important)
-The script can compute FOB in different ways. This is useful because some aircraft populate fuel datarefs differently.
+### Fuel source selector
+The script computes FOB in different ways, which may be useful if some aircraft populate fuel datarefs differently. `F123` works well for CL650.
 
 - **F123 (fuel1+2+3)**: uses `sim/flightmodel/weight/m_fuel1/2/3`
 - **TOTAL (m_fuel_total)**: uses `sim/flightmodel/weight/m_fuel_total`
