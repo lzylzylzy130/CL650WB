@@ -21,7 +21,7 @@
 
     Features:
         - Unit selector kg / lbs (display only)
-        - Auto ZFW = m_total - fuel_used
+        - Auto ZFW = m_total - fuel_on_board
         - Manual override (what-if only; no write-back)
         - Auto value shown before each input
         - Main report + collapsed debug block
@@ -205,7 +205,7 @@ local function build_main_report(total_kg, fob_kg, payload_kg)
     table.insert(lines, "MTOW margin: " .. fmt_mass(mtow_margin_kg, 1))
 
     table.insert(lines, "")
-    table.insert(lines, "==== CG OUTPUTS (from sim/flightmodel2/misc) ====")
+    table.insert(lines, "==== CG OUTPUTS ====")
     if HAS_cg_off_z then
         table.insert(lines, "cg_offset_z     : " .. fmt_m(nz(cg_offset_z), 3))
     else
@@ -396,7 +396,7 @@ function on_build_gui(window_id)
     local a_oew     = auto_oew_kg()
 
     imgui.TextUnformatted("AUTO (from sim):")
-    imgui.TextUnformatted("  TOTAL: " .. fmt_mass(a_total, 1) .. "   FUEL USED: " .. fmt_mass(a_fuelU, 1) .. " (source=" .. fuel_source .. ")")
+    imgui.TextUnformatted("  TOTAL: " .. fmt_mass(a_total, 1) .. "   FOB: " .. fmt_mass(a_fuelU, 1) .. " (source=" .. fuel_source .. ")")
     imgui.TextUnformatted("  ZFW  : " .. fmt_mass(a_zfw, 1)   .. "   PAYLOAD: " .. fmt_mass(a_payload, 1))
     imgui.TextUnformatted("  OEW(check): " .. fmt_mass(a_oew, 1) .. "   Jettison: " .. fmt_mass(nz(m_jettison), 1))
 
@@ -410,15 +410,15 @@ function on_build_gui(window_id)
     if supports_disabled and (not manual_mode) then imgui.BeginDisabled(true) end
 
     imgui.TextUnformatted("Auto m_total: " .. fmt_mass(a_total, 1))
-    local ch_t, v_t = imgui.InputFloat("TOTAL used##total", to_disp_mass(man_total_kg), 0, 0, "%.1f")
+    local ch_t, v_t = imgui.InputFloat("TOTAL weight##total", to_disp_mass(man_total_kg), 0, 0, "%.1f")
     if ch_t and manual_mode then man_total_kg = math.max(0.0, from_disp_mass(v_t)) end
 
-    imgui.TextUnformatted("Auto fuel used: " .. fmt_mass(a_fuelU, 1))
-    local ch_f, v_f = imgui.InputFloat("FUEL used##fuel", to_disp_mass(man_fob_kg), 0, 0, "%.1f")
+    imgui.TextUnformatted("Auto FOB: " .. fmt_mass(a_fuelU, 1))
+    local ch_f, v_f = imgui.InputFloat("FUEL on board##fuel", to_disp_mass(man_fob_kg), 0, 0, "%.1f")
     if ch_f and manual_mode then man_fob_kg = math.max(0.0, from_disp_mass(v_f)) end
 
     imgui.TextUnformatted("Auto m_fixed (payload): " .. fmt_mass(a_payload, 1))
-    local ch_p, v_p = imgui.InputFloat("PAYLOAD used##payload", to_disp_mass(man_payload_kg), 0, 0, "%.1f")
+    local ch_p, v_p = imgui.InputFloat("PAYLOAD##payload", to_disp_mass(man_payload_kg), 0, 0, "%.1f")
     if ch_p and manual_mode then man_payload_kg = math.max(0.0, from_disp_mass(v_p)) end
 
     if supports_disabled and (not manual_mode) then imgui.EndDisabled() end
